@@ -43,7 +43,27 @@ var Users = sequelize.define('users',{
 	idusers : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
 	username : Sequelize.STRING,
 	pass : Sequelize.STRING
-}).sync()
+});
+
+var Questions = sequelize.define('questions',{
+	idquestion : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+	question : Sequelize.STRING,
+	isanswerd : {type : Sequelize.INTEGER, defaultValue : 0}
+});
+
+var QuestionsAnswers = sequelize.define('question_answers',{
+	idquestion_answer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+	answer : Sequelize.STRING,
+	idquestion : {type : Sequelize.INTEGER}
+});
+
+var Answers = sequelize.define('answers',{
+	idanswer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+	idquestion_answer : {type : Sequelize.INTEGER},
+	idquestion : {type : Sequelize.INTEGER}
+});
+
+Users.sync()
 .then(function(result){
 	result.find({
 		where : { username : 'admin'}
@@ -54,49 +74,16 @@ var Users = sequelize.define('users',{
 		}
 	});
 	
-});
-
-var Questions = sequelize.define('questions',{
-	idquestion : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-	question : Sequelize.STRING,
-	isanswerd : {type : Sequelize.INTEGER, defaultValue : 0}
-}).sync();
-
-var QuestionsAnswers = sequelize.define('question_answers',{
-	idquestion_answer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-	answer : Sequelize.STRING,
-	idquestion : {type : Sequelize.INTEGER}
-}).sync();
-
-var Answers = sequelize.define('answers',{
-	idanswer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-	idquestion_answer : {type : Sequelize.INTEGER},
-	idquestion : {type : Sequelize.INTEGER}
-}).sync();
-
-
-
-/*
-	Why cant I access the Questions var in the global scope? Instead of defining them again inside my gets?
-	There has to be a way....
-	but what is it???.... dun dun dun....
-*/
+})
+Questions.sync();
+QuestionsAnswers.sync();
+Answers.sync();
 
 app.get('/', function(req, res){ 
-	var Questions = sequelize.define('questions',{
-		idquestion : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		question : Sequelize.STRING,
-		isanswerd : {type : Sequelize.INTEGER, defaultValue : 0}
-	});
-
-	var QuestionsAnswers = sequelize.define('question_answers',{
-		idquestion_answer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		answer : Sequelize.STRING,
-		idquestion : {type : Sequelize.INTEGER}
-	})
-
+	console.log(req.cookies.answeredQuestion);
+	var list = (typeof req.cookies.answeredQuestion === 'undefined') ? 0 : req.cookies.answeredQuestion;
 	Questions.findAll({
-		where : { isanswerd : 0 },
+		where : ['idquestion NOT IN (' + list + ')'],
 		order : sequelize.fn('RAND'),
 		limit : '0, 1'
 	}).then(function(record){
@@ -130,11 +117,7 @@ app.get('/', function(req, res){
 
 app.get('/admin', function(req, res){ 
 	var data = Admin.init(req.cookies, Questions, QuestionsAnswers);
-	var Questions = sequelize.define('questions',{
-		idquestion : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		question : Sequelize.STRING,
-		isanswerd : {type : Sequelize.INTEGER, defaultValue : 0}
-	});
+	
 	Questions.all()
 	.then(function(record){
 		if(record.length){
@@ -149,11 +132,7 @@ app.get('/admin', function(req, res){
 });
 
 app.post('/login', function(req, res){ 
-	var Users = sequelize.define('users',{
-		idusers : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		username : Sequelize.STRING,
-		pass : Sequelize.STRING
-	});
+	
 	Users.find({
 		where : {
 			username : req.body.u,
@@ -169,18 +148,6 @@ app.post('/login', function(req, res){
 });
 
 app.post('/addQuestion', function(req, res){ 
-	var Questions = sequelize.define('questions',{
-		idquestion : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		question : Sequelize.STRING,
-		isanswerd : {type : Sequelize.INTEGER, defaultValue : 0}
-	}),
-
-	QuestionsAnswers = sequelize.define('question_answers',{
-		idquestion_answer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		answer : Sequelize.STRING,
-		idquestion : {type : Sequelize.INTEGER}
-	}),
-
 	task = Questions.create(req.body)
 	.then(function(result){
 		var choices = [],
@@ -200,34 +167,28 @@ app.post('/addQuestion', function(req, res){
 });
 
 app.post('/addAnswer', function(req, res){ 
-	var Answers = sequelize.define('answers',{
-		idanswer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		idquestion_answer : {type : Sequelize.INTEGER},
-		idquestion : {type : Sequelize.INTEGER}
-	});
-
-	var Questions = sequelize.define('questions',{
-		idquestion : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-		question : Sequelize.STRING,
-		isanswerd : {type : Sequelize.INTEGER, defaultValue : 0}
-	});
-
 	Answers.create(req.body)
 	.then(function(resp){
-
 		Questions.find({
 			where : { idquestion : req.body.idquestion }
 		})
 		.then(function(item){
+			var list = req.cookies.answeredQuestion;
+			if(typeof list === 'undefined'){
+				list = req.body.idquestion;
+			}else{
+				list = list + ',' + req.body.idquestion;
+			}
+
+			res.cookie('answeredQuestion', list);
 			item.updateAttributes({
 		      isanswerd: 1
 		    }).then(function() {});
+		    var result = {success : false};
+			if(resp.dataValues){ result = {success : true}; }
+			res.send(result);
 		});
 
-
-		var result = {success : false};
-		if(resp.dataValues){ result = {success : true}; }
-		res.send(result);
 	});
 });
 
