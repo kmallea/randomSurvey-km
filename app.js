@@ -204,14 +204,11 @@ app.post('/addAnswer', function(req, res){
 				list = list + ',' + req.body.idquestion;
 			}
 			res.cookie('answeredQuestion', list);
-			item.updateAttributes({
-		      isanswerd: 1
-		    }).then(function() {});
 		    var result = {success : false};
 
 		    //update the count of the answer
 		    QuestionsAnswers.find({
-		    	where : { idquestion : req.body.idquestion}
+		    	where : { idquestion_answer : req.body.idquestion_answer}
 		    })
 		    .then(function(item){
 		    	item.updateAttributes({
