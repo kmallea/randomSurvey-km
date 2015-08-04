@@ -54,7 +54,8 @@ var Questions = sequelize.define('questions',{
 var QuestionsAnswers = sequelize.define('question_answers',{
 	idquestion_answer : {type : Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
 	answer : Sequelize.STRING,
-	idquestion : {type : Sequelize.INTEGER}
+	idquestion : {type : Sequelize.INTEGER},
+	answercount : {type : Sequelize.INTEGER, defaultValue : 0}
 });
 
 var Answers = sequelize.define('answers',{
@@ -63,14 +64,6 @@ var Answers = sequelize.define('answers',{
 	idquestion : {type : Sequelize.INTEGER}
 });
 
-Questions.hasMany(QuestionsAnswers, {foreignKey: 'idquestion'});
-QuestionsAnswers.belongsTo(Questions, {foreignKey: 'idquestion'});
-
-QuestionsAnswers.hasMany(Answers, {foreignKey: 'idquestion_answer'});
-Answers.belongsTo(QuestionsAnswers, {foreignKey: 'idquestion_answer'});
-
-Questions.hasMany(Answers, {foreignKey: 'idquestion'});
-Answers.belongsTo(Questions, {foreignKey: 'idquestion'});
 
 Users.sync()
 .then(function(result){
@@ -126,7 +119,7 @@ app.get('/', function(req, res){
 app.get('/admin', function(req, res){ 
 	var data = Admin.init(req.cookies, Questions, QuestionsAnswers);
 	
-	sequelize.query("SELECT questions.idquestion, questions.question, answer, count(answer) - 1 as answerTotal FROM questions inner join question_answers ON question_answers.idquestion = questions.idquestion left outer join answers ON answers.idquestion_answer = question_answers.idquestion_answer GROUP BY question_answers.idquestion_answer", 
+	sequelize.query("SELECT questions.idquestion, questions.question, answer, answercount FROM questions inner join question_answers ON question_answers.idquestion = questions.idquestion GROUP BY question_answers.idquestion_answer", 
 		{ type: sequelize.QueryTypes.SELECT})
 	.then(function(record){
 		// format the results
@@ -210,16 +203,24 @@ app.post('/addAnswer', function(req, res){
 			}else{
 				list = list + ',' + req.body.idquestion;
 			}
-
 			res.cookie('answeredQuestion', list);
 			item.updateAttributes({
 		      isanswerd: 1
 		    }).then(function() {});
 		    var result = {success : false};
-			if(resp.dataValues){ result = {success : true}; }
-			res.send(result);
-		});
 
+		    //update the count of the answer
+		    QuestionsAnswers.find({
+		    	where : { idquestion : req.body.idquestion}
+		    })
+		    .then(function(item){
+		    	item.updateAttributes({
+			      answercount : item.get('answercount') + 1
+			    });
+			   if(resp.dataValues){ result = {success : true}; }
+				res.send(result); 
+		    });
+		});
 	});
 });
 
