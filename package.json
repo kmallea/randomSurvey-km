@@ -1,6 +1,6 @@
 {
   "name": "randomSurvey",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "When a guest visits present a random unanswered survey question",
   "main": "app.js",
   "scripts": {

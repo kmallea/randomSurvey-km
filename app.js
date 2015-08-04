@@ -24,6 +24,7 @@ app.use(bodyParser.json());
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
+
 var sequelize = new Sequelize(mySQLConfig.databaseName, mySQLConfig.userName, mySQLConfig.pass, {
   host: mySQLConfig.hostUrl,
   dialect: 'mysql',
@@ -73,6 +74,13 @@ var Answers = sequelize.define('answers',{
 	idquestion : {type : Sequelize.INTEGER}
 }).sync();
 
+
+
+/*
+	Why cant I access the Questions var in the global scope? Instead of defining them again inside my gets?
+	There has to be a way....
+	but what is it???.... dun dun dun....
+*/
 
 app.get('/', function(req, res){ 
 	var Questions = sequelize.define('questions',{

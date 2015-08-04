@@ -9,8 +9,8 @@ What you need to have installed already
 ### Installation
 From the command line enter the following commands
 ```sh
-git clone [git-repo-url] randomSurvey
-cd randomSurvey
+git clone https://github.com/kmallea/randomSurvey-km.git randomSurvey-km
+cd randomSurvey-km
 npm install
 ```
 
