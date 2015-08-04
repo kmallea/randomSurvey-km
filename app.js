@@ -63,6 +63,15 @@ var Answers = sequelize.define('answers',{
 	idquestion : {type : Sequelize.INTEGER}
 });
 
+Questions.hasMany(QuestionsAnswers, {foreignKey: 'idquestion'});
+QuestionsAnswers.belongsTo(Questions, {foreignKey: 'idquestion'});
+
+QuestionsAnswers.hasMany(Answers, {foreignKey: 'idquestion_answer'});
+Answers.belongsTo(QuestionsAnswers, {foreignKey: 'idquestion_answer'});
+
+Questions.hasMany(Answers, {foreignKey: 'idquestion'});
+Answers.belongsTo(Questions, {foreignKey: 'idquestion'});
+
 Users.sync()
 .then(function(result){
 	result.find({
@@ -80,7 +89,6 @@ QuestionsAnswers.sync();
 Answers.sync();
 
 app.get('/', function(req, res){ 
-	console.log(req.cookies.answeredQuestion);
 	var list = (typeof req.cookies.answeredQuestion === 'undefined') ? 0 : req.cookies.answeredQuestion;
 	Questions.findAll({
 		where : ['idquestion NOT IN (' + list + ')'],
@@ -118,14 +126,38 @@ app.get('/', function(req, res){
 app.get('/admin', function(req, res){ 
 	var data = Admin.init(req.cookies, Questions, QuestionsAnswers);
 	
-	Questions.all()
+	sequelize.query("SELECT questions.idquestion, questions.question, answer, count(answer) as answerTotal FROM questions inner join question_answers ON question_answers.idquestion = questions.idquestion inner join answers ON answers.idquestion_answer = question_answers.idquestion_answer GROUP BY question_answers.idquestion_answer", 
+		{ type: sequelize.QueryTypes.SELECT})
 	.then(function(record){
+		// format the results
+		console.log(record.length, record[1].idquestion);
 		if(record.length){
-			data.question = [];
-			for(var i in record){
-				data.question.push(record[i].dataValues);
+			var lastId = '';
+			data.question = [],
+			totalRec = record.length;
+
+			for(var i = 0; i < totalRec; i++){
+				if(lastId !== record[i].idquestion){
+					var question = {
+						question : record[i].question,
+						answers : []
+					}
+					lastId = record[i].idquestion;
+				}
+
+				question.answers.push(record[i]);
+
+				if(i < totalRec-1){
+					if(record[i+1].idquestion !== lastId){
+						data.question.push(question);
+					}
+				}else{
+					data.question.push(question);
+				}
+				
 			}
 		}
+		console.log(data);
 		res.render('admin', data);
 	});
 	 

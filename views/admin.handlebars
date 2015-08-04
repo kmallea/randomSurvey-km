@@ -55,13 +55,14 @@
 			</div>
 			{{#each question}}
 				<div class="row">
-					<div class="col s8">
-						{{question}}
-					</div>
-					<div class="col s4 center">
-						{{#if isanswerd}}Answered{{else}}Not Answered{{/if}}
+					<div class="col s12">
+						<strong>{{question}}</strong><br />
+						{{#each answers}}
+							{{answer}} {{answerTotal}} <br />
+						{{/each}}
 					</div>
 				</div>
+				
 			{{/each}}
 		{{else}}
 			<div class="row">
