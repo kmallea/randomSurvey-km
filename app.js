@@ -126,11 +126,10 @@ app.get('/', function(req, res){
 app.get('/admin', function(req, res){ 
 	var data = Admin.init(req.cookies, Questions, QuestionsAnswers);
 	
-	sequelize.query("SELECT questions.idquestion, questions.question, answer, count(answer) as answerTotal FROM questions inner join question_answers ON question_answers.idquestion = questions.idquestion inner join answers ON answers.idquestion_answer = question_answers.idquestion_answer GROUP BY question_answers.idquestion_answer", 
+	sequelize.query("SELECT questions.idquestion, questions.question, answer, count(answer) - 1 as answerTotal FROM questions inner join question_answers ON question_answers.idquestion = questions.idquestion left outer join answers ON answers.idquestion_answer = question_answers.idquestion_answer GROUP BY question_answers.idquestion_answer", 
 		{ type: sequelize.QueryTypes.SELECT})
 	.then(function(record){
 		// format the results
-		console.log(record.length, record[1].idquestion);
 		if(record.length){
 			var lastId = '';
 			data.question = [],
