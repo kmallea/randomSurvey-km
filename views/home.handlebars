@@ -1,0 +1,26 @@
+<div class="container">
+	<div class="section">
+		<div class="row">
+			<div class="col s12">
+				{{#if question}}
+					<h3>{{question.question}}</h3>
+					{{#each choices}}
+						<div class="row">
+							<div class="col s12">
+								<input name="group1" type="radio" id="test{{idquestion_answer}}" value="{{idquestion_answer}}"/>
+	      						<label for="test{{idquestion_answer}}">{{answer}}</label>
+							</div>
+						</div>
+					{{/each}}
+					<div class="row">
+						<div class="col s12">
+							 <a class="waves-effect waves-light pink darken-2 btn action-btn" data-action="markAnswer" data-id="{{question.idquestion}}">Add Your Answer</a>
+						</div>
+					</div>
+				{{else}}
+					<h3>There are no question at the moment. <br />Please try back later.</h3>
+				{{/if}}
+			</div>
+		</div>
+	</div>
+</div>

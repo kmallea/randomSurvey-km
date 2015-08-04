@@ -1,0 +1,93 @@
+<div class="container">
+	<div class="section">
+		{{#if isLoggedIn}}
+			
+			<div class="row">
+				<div class="col s12 m9">
+					<h3 class="title">Questions</h3>
+				</div>
+				<div class="col s12 m3 right-align">
+					<a class="waves-effect waves pink darken-2 btn action-btn new-quest-btn" data-action="newQuestion">New Question</a>
+				</div>
+			</div>
+			
+			<div id="new-question" class="row hide">
+				<div class="card col12">
+					<div class="card-content">
+						<div class="col12">
+							<h4>Add a new question</h4>
+							<div class="input-field col s12">
+			                	<input placeholder="Enter your question" id="question" type="text" class="validate">
+			             	</div>
+			             	<h4>Choices</h4>
+			             	<p>Add at least 2 choices.</p>
+			             	<div class="input-field col s12">
+			                	<input placeholder="Enter a choice" id="choice-1" type="text" class="validate">
+			             	</div>
+			             	<div class="input-field col s12">
+			                	<input placeholder="Enter a choice" id="choice-2" type="text" class="validate">
+			             	</div>
+			             	<div class="input-field col s12 hide">
+			                	<input placeholder="Enter a choice" id="choice-3" type="text" class="validate">
+			             	</div>
+			             	<div class="input-field col s12 hide">
+			                	<input placeholder="Enter a choice" id="choice-4" type="text" class="validate">
+			             	</div>
+			             	<div class="input-field col s12 hide">
+			                	<input placeholder="Enter a choice" id="choice-5" type="text" class="validate">
+			             	</div>
+			             	<div class="input-field col s12 hide">
+			                	<input placeholder="Enter a choice" id="choice-6" type="text" class="validate">
+			             	</div>
+			             	<div class="row">
+				             	<div class="col s12 m6"><a class="waves-effect waves-light yellow darken-3 btn action-btn" data-action="addChoice">Add Another Choice</a></div>
+				             	<div class="col s12 m6 right-align">
+				             		<a class="waves-effect waves-light grey darken-3 btn action-btn" data-action="cancelAdd">Cancel</a>
+				             		<a class="waves-effect waves-light pink darken-2 btn action-btn" data-action="saveQuestion">Save</a>
+				             	</div>
+				            </div>
+			            </div>
+			            <div class="col12">
+
+			            </div>
+					</div>
+				</div>
+			</div>
+			{{#each question}}
+				<div class="row">
+					<div class="col s8">
+						{{question}}
+					</div>
+					<div class="col s4 center">
+						{{#if isanswerd}}Answered{{else}}Not Answered{{/if}}
+					</div>
+				</div>
+			{{/each}}
+		{{else}}
+			<div class="row">
+		        <div class="col s12 m6 offset-m3 center">
+		          <div class="card grey lighten-4">
+		            <div class="card-content yellow darken-3">
+		              <span class="card-title black-text">Admin Login</span>
+		              
+		              	<form class="col s12">
+		              		<br />
+		              		<div class="row">
+			              		<div class="input-field col s12">
+						          <input placeholder="Username" id="user_name" type="text" class="validate" value="{{name}}">
+						        </div>
+						        <div class="input-field col s12">
+						          <input placeholder="Password" id="password" type="password" class="validate">
+						        </div>
+						    </div>
+		              	</form>
+		            </div>
+		            <div class="card-action right-align">
+		              <a class="waves-effect waves-light pink darken-2 btn action-btn" data-action="processLogin">Login</a>
+		            </div>
+		          </div>
+		        </div>
+		      </div>
+		{{/if}}
+	</div>
+</div>
